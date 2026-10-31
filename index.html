@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="AI Prompt Architect — ubah prompt singkat menjadi master prompt terstruktur.">
+  <title>Prompt Architect — Master Prompt Builder</title>
+  <style>
+    :root{
+      --bg:#0b0d10; --panel:#12161b; --panel2:#171c22; --line:#29313a;
+      --text:#f4f7fa; --muted:#9ca8b5; --accent:#ff7a45; --accent2:#6d7cff;
+      --good:#35c98b; --danger:#ff5f6d; --shadow:0 18px 60px rgba(0,0,0,.32);
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;background:
+      radial-gradient(circle at 10% 0%,rgba(255,122,69,.11),transparent 28%),
+      radial-gradient(circle at 100% 10%,rgba(109,124,255,.12),transparent 25%),
+      var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      min-height:100vh;
+    }
+    button,textarea,select{font:inherit}
+    .wrap{width:min(1180px,calc(100% - 32px));margin:auto}
+    header{padding:38px 0 24px;display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+    .brand{display:flex;gap:14px;align-items:flex-start}
+    .mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),#ffb15e);color:#101216;font-weight:900;font-size:20px;box-shadow:0 8px 30px rgba(255,122,69,.2)}
+    h1{margin:0;font-size:clamp(28px,4vw,44px);letter-spacing:-1.8px;line-height:1}
+    .sub{margin:9px 0 0;color:var(--muted);max-width:680px;line-height:1.55}
+    .badge{border:1px solid var(--line);background:rgba(255,255,255,.03);padding:8px 11px;border-radius:999px;color:#c9d1d9;font-size:12px;white-space:nowrap}
+    main{padding-bottom:60px}
+    .grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:18px}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.018));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+    .card-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .card-head h2{font-size:14px;text-transform:uppercase;letter-spacing:.12em;margin:0;color:#cbd4dc}
+    .card-body{padding:20px}
+    textarea{
+      width:100%;min-height:300px;resize:vertical;border:1px solid #303943;border-radius:14px;background:#0d1014;
+      color:var(--text);padding:17px;outline:none;line-height:1.6;
+    }
+    textarea:focus{border-color:#66717d;box-shadow:0 0 0 3px rgba(255,255,255,.04)}
+    .hint{font-size:12px;color:var(--muted);margin-top:9px}
+    .row{display:flex;gap:10px;align-items:center}
+    .actions{display:flex;gap:9px;margin-top:14px;flex-wrap:wrap}
+    button{
+      border:0;border-radius:12px;padding:11px 15px;cursor:pointer;font-weight:750;transition:.18s transform,.18s opacity,.18s background;
+    }
+    button:hover{transform:translateY(-1px)}
+    button:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .primary{background:var(--accent);color:#17100c}
+    .secondary{background:#20262e;color:#e9eef2;border:1px solid #303943}
+    .ghost{background:transparent;color:#bfc8d1;border:1px solid var(--line)}
+    .examples{margin-top:18px}
+    .examples-title{font-size:12px;color:#7f8a96;margin-bottom:8px}
+    .chips{display:flex;gap:7px;flex-wrap:wrap}
+    .chip{font-size:12px;padding:8px 10px;border:1px solid var(--line);background:#101419;color:#bfc8d1;border-radius:999px;cursor:pointer}
+    .chip:hover{border-color:#53606c;color:#fff}
+    .status{font-size:12px;color:var(--muted);min-height:18px;margin-top:10px}
+    .status.error{color:#ff8893}.status.ok{color:#61dfa9}
+    .empty{min-height:430px;display:grid;place-items:center;text-align:center;color:var(--muted);padding:40px}
+    .empty .big{font-size:40px;margin-bottom:10px}
+    .output{display:none}
+    .output.active{display:block}
+    .toolbar{display:flex;gap:7px;flex-wrap:wrap}
+    .section-list{display:grid;gap:9px}
+    .section{
+      border:1px solid var(--line);background:#0e1217;border-radius:13px;overflow:hidden;
+    }
+    .section summary{cursor:pointer;list-style:none;padding:13px 14px;display:flex;align-items:center;gap:10px;font-weight:800}
+    .section summary::-webkit-details-marker{display:none}
+    .num{width:24px;height:24px;border-radius:8px;background:#1d242c;display:grid;place-items:center;font-size:11px;color:#9faab6}
+    .section .content{padding:0 14px 14px;color:#c8d0d8;line-height:1.55;font-size:13px}
+    .section .content p{white-space:pre-wrap;margin:0}
+    .section ul{margin:0;padding-left:19px}
+    .master{margin-top:12px}
+    .master pre{margin:0;white-space:pre-wrap;word-break:break-word;background:#080a0d;border:1px solid #303943;border-radius:14px;padding:16px;line-height:1.58;color:#edf2f6;font-size:13px;max-height:580px;overflow:auto}
+    .assumptions{margin-top:12px;padding:13px 14px;border-radius:13px;background:rgba(109,124,255,.07);border:1px solid rgba(109,124,255,.2)}
+    .assumptions b{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#aeb8ff}
+    .assumptions ul{margin:8px 0 0;padding-left:18px;color:#c6cde7;font-size:12px;line-height:1.5}
+    .structure{
+      display:grid;grid-template-columns:repeat(6,1fr);gap:7px;margin-top:15px;
+    }
+    .structure div{padding:9px 7px;text-align:center;border-radius:10px;background:#11161c;border:1px solid var(--line);font-size:10px;color:#aeb8c3}
+    .structure .on{color:#fff;border-color:#555f6a;background:#171d24}
+    footer{padding:20px 0 35px;color:#687480;font-size:11px;text-align:center}
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.empty{min-height:220px}.structure{grid-template-columns:repeat(3,1fr)}header{padding-top:25px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="mark">✦</div>
+        <div>
+          <h1>Prompt Architect</h1>
+          <p class="sub">Masukkan prompt singkat. AI membedah maksudnya lalu menyusun <b>master prompt</b> dengan 6 blok: Role → Task → Context → Reasoning → Stop Conditions → Output.</p>
+        </div>
+      </div>
+      <div class="badge">6-block prompt framework</div>
+    </header>
+
+    <main>
+      <div class="grid">
+        <section class="card">
+          <div class="card-head">
+            <h2>01 · Input</h2>
+            <button class="ghost" id="clearBtn">Clear</button>
+          </div>
+          <div class="card-body">
+            <textarea id="shortPrompt" placeholder="Contoh: Buatkan strategi PPDB MA Nurul Ummah agar pendaftar berkualitas meningkat tahun depan."></textarea>
+            <div class="hint">Tulis natural. Tidak perlu memikirkan Role, Context, Output, dll. AI yang menyusunnya.</div>
+
+            <div class="actions">
+              <button class="primary" id="buildBtn">✦ Build Master Prompt</button>
+              <button class="secondary" id="sampleBtn">Isi contoh</button>
+            </div>
+            <div class="status" id="status"></div>
+
+            <div class="examples">
+              <div class="examples-title">Contoh cepat</div>
+              <div class="chips">
+                <button class="chip" data-example="Buatkan sistem manajemen santri berbasis web untuk pesantren kecil dengan biaya rendah.">MIS pesantren</button>
+                <button class="chip" data-example="Analisis pembelajaran Nahwu dan buatkan roadmap perbaikan agar jenjang antar lembaga lebih nyambung.">Pembelajaran Nahwu</button>
+                <button class="chip" data-example="Buat strategi konten Instagram madrasah untuk meningkatkan pendaftar baru tanpa iklan berbayar.">Marketing madrasah</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <h2>02 · Master Prompt</h2>
+            <div class="toolbar">
+              <button class="secondary" id="copyBtn" disabled>Copy</button>
+              <button class="secondary" id="downloadBtn" disabled>TXT</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="empty" id="emptyState">
+              <div>
+                <div class="big">⌁</div>
+                <div><b>Belum ada master prompt.</b><br>Masukkan prompt singkat lalu klik <b>Build Master Prompt</b>.</div>
+              </div>
+            </div>
+
+            <div class="output" id="output">
+              <div class="section-list" id="sections"></div>
+              <div class="structure">
+                <div class="on">ROLE</div><div class="on">TASK</div><div class="on">CONTEXT</div>
+                <div class="on">REASONING</div><div class="on">STOP</div><div class="on">OUTPUT</div>
+              </div>
+              <div class="assumptions" id="assumptions"></div>
+              <div class="master">
+                <pre id="masterPrompt"></pre>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>Prompt Architect · API key stays server-side · built for practical master-prompt generation</footer>
+  </div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const input = $('#shortPrompt');
+const buildBtn = $('#buildBtn');
+const status = $('#status');
+const output = $('#output');
+const emptyState = $('#emptyState');
+const sections = $('#sections');
+const assumptions = $('#assumptions');
+const master = $('#masterPrompt');
+const copyBtn = $('#copyBtn');
+const downloadBtn = $('#downloadBtn');
+
+let lastResult = null;
+
+function setStatus(text, type='') {
+  status.textContent = text;
+  status.className = 'status ' + type;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+
+function renderList(items) {
+  if (!Array.isArray(items)) return `<p>${escapeHtml(items || '')}</p>`;
+  return `<ul>${items.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>`;
+}
+
+function render(result) {
+  lastResult = result;
+  const blocks = [
+    ['01','Role','role',false],
+    ['02','Task','task',false],
+    ['03','Context','context',true],
+    ['04','Reasoning','reasoning',false],
+    ['05','Stop Conditions','stop_conditions',true],
+    ['06','Output','output',true]
+  ];
+  sections.innerHTML = blocks.map(([n,label,key,isList]) => `
+    <details class="section" ${key !== 'context' ? 'open' : ''}>
+      <summary><span class="num">${n}</span>${label}</summary>
+      <div class="content">${isList ? renderList(result[key]) : `<p>${escapeHtml(result[key])}</p>`}</div>
+    </details>
+  `).join('');
+
+  const a = Array.isArray(result.assumptions) ? result.assumptions : [];
+  assumptions.innerHTML = `<b>Assumptions / inferred details</b>${a.length ? `<ul>${a.map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>` : '<ul><li>Tidak ada asumsi penting.</li></ul>'}`;
+
+  master.textContent = result.master_prompt || '';
+  emptyState.style.display = 'none';
+  output.classList.add('active');
+  copyBtn.disabled = false;
+  downloadBtn.disabled = false;
+}
+
+async function build() {
+  const prompt = input.value.trim();
+  if (!prompt) {
+    setStatus('Isi prompt singkat dulu.', 'error');
+    input.focus();
+    return;
+  }
+
+  buildBtn.disabled = true;
+  buildBtn.textContent = '⌁ Menganalisis...';
+  setStatus('AI sedang membedah tujuan, konteks, batasan, dan output...');
+  try {
+    const res = await fetch('/api/generate', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Gagal membuat master prompt.');
+    render(data);
+    setStatus('Master prompt selesai dibuat.', 'ok');
+  } catch (err) {
+    setStatus(err.message || 'Terjadi kesalahan.', 'error');
+  } finally {
+    buildBtn.disabled = false;
+    buildBtn.textContent = '✦ Build Master Prompt';
+  }
+}
+
+buildBtn.addEventListener('click', build);
+input.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') build();
+});
+$('#clearBtn').addEventListener('click', () => {
+  input.value=''; output.classList.remove('active'); emptyState.style.display='grid';
+  sections.innerHTML=''; assumptions.innerHTML=''; master.textContent=''; copyBtn.disabled=true; downloadBtn.disabled=true; setStatus('');
+});
+$('#sampleBtn').addEventListener('click', () => {
+  input.value='Buatkan strategi PPDB MA Nurul Ummah agar pendaftar berkualitas meningkat tahun depan.';
+  input.focus();
+});
+document.querySelectorAll('[data-example]').forEach(btn => btn.addEventListener('click', () => {
+  input.value = btn.dataset.example;
+  input.focus();
+}));
+copyBtn.addEventListener('click', async () => {
+  if (!lastResult?.master_prompt) return;
+  await navigator.clipboard.writeText(lastResult.master_prompt);
+  setStatus('Master prompt disalin ke clipboard.', 'ok');
+});
+downloadBtn.addEventListener('click', () => {
+  if (!lastResult?.master_prompt) return;
+  const blob = new Blob([lastResult.master_prompt], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'master-prompt.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+</script>
+</body>
+</html>
